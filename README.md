@@ -1,5 +1,5 @@
 **Footprints_Kljun15_KM2001**
-
+=
 This program calculates the distances where the relative footprint contributions
 (50%, 60%, 70%, 80%) are obtained for the Eddypro full output data. The program
 uses Kljun et al. (2015) and Kormann & Meixner (2001) methods to estimate
@@ -11,6 +11,8 @@ more detailed descriptions below.
 Kormann & Meixner (2001) gives larger footprints and is 6-7 times slower than 
 Kljun et al. (2015) in this program.
 
+No fancy libraries needed. Check that Numpy and Pandas are installed.
+=
 **data_loc**
 Location of the eddypro full output datafile.
 The location needs to be in hyphens

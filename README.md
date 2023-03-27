@@ -12,7 +12,7 @@ Kormann & Meixner (2001) gives larger footprints and is 6-7 times slower than
 Kljun et al. (2015) in this program.
 
 No fancy libraries needed. Check that Numpy and Pandas are installed.
-=
+
 **data_loc**
 Location of the eddypro full output datafile.
 The location needs to be in hyphens

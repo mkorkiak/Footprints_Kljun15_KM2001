@@ -13,50 +13,45 @@ Kljun et al. (2015) in this program.
 
 No fancy libraries needed. Check that Numpy and Pandas are installed.
 
-**data_loc**
-Location of the eddypro full output datafile.
-The location needs to be in hyphens
-The folders can be separated by "/" (Linux and windows) or by "\" (Windows)
-But if the folders are separated by "\", one needs to add "r" before the first hyphen like this:
-data_loc=r'C:\m\Desktop\results\'
+**data_loc**  
+Location of the eddypro full output datafile.  
+The location needs to be in hyphens.  
+The folders can be separated by "/" (Linux and windows) or by "\" (Windows), but if the folders are separated by "\", one needs to add "r" before the first hyphen like this: data_loc=r'C:\m\Desktop\results\'
 
-**save_loc**
+**save_loc**  
 Folder to save the footprints. Same rules as for data_loc.
 
-**meas_height**
-Measurement height in meters. Typically means the sonic anemometer height. 
+**meas_height**  
+Measurement height in meters. Typically means the sonic anemometer height.   
 This variable is mandatory.
 
-**canopy_height**
-Canopy height
-Either canopy height or displacement height is required. Canopy height is used
-to calculate the displacement height, if the displacement height is not given.
-If disp_height is given, canopy_height is ignored and a warning is raised.
+**canopy_height**  
+Canopy height.  
+Either canopy height or displacement height is required. Canopy height is used to calculate the displacement height, if the displacement height is not given. If disp_height is given, canopy_height is ignored and a warning is raised.  
 Use the same canopy height as in Eddypro!!!
 
-**disp_height**
-Displacement height
-Set to None if not known. Don't use zero.
-If disp_height is None, the displacement height will be calculated from the
-canopy_height similarly as in Eddypro.
-Use the same displacement height as in Eddypro!!!
+**disp_height**  
+Displacement height.  
+Set to None if not known. Don't use zero.  
+If disp_height is None, the displacement height will be calculated from the canopy_height similarly as in Eddypro.  
+Use the same displacement height as in Eddypro!!!  
 
-**lat**
-Latitude of the measurements
-Needed for Kljun et al. 2015 method for boundary layer height calculation.
-Needs to be 0 <= lat <= 90
+**lat**  
+Latitude of the measurements  .
+Needed for Kljun et al. 2015 method for boundary layer height calculation.  
+Needs to be 0 <= lat <= 90.
 
-**do_kljun15**
-Calculate footprints according to Kljun et al. 2015
-Must be True or False
+**do_kljun15**  
+Calculate footprints according to Kljun et al. (2015).  
+Must be True or False.
 
-**do_km**
-Calculate footprints according to Kormann & Meixner, 2001
-Must be True or False
+**do_km**  
+Calculate footprints according to Kormann & Meixner (2001).  
+Must be True or False.
 
 
 **References**
-
+=
 Kljun2015:
 Kljun, N., Calanca, P., Rotach, M. W., & Schmid, H. P. (2015). A simple 
 two-dimensional parameterisation for Flux Footprint Prediction (FFP). 

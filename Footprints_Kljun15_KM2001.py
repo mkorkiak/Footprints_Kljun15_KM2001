@@ -84,14 +84,14 @@ def check_create_dir(path):
 def check_params(meas_height, disp_height, canopy_height, lat, save_loc,
                  do_kljun15, do_km):
     #Check the save_loc parameter, if the final character is not "/" or "\", add it
-    if save_loc[-1]!='/':
-        if save_loc[-1]!='\\':
+    if save_loc[-1] != '/':
+        if save_loc[-1] != '\\':
             #Check the first character, if it is "/", assume linux system and add "/"
-            if save_loc[0]=='/':
-                save_loc=save_loc+'/'
+            if save_loc[0] == '/':
+                save_loc = save_loc + '/'
             #Otherwise, it is a windows system, add "\"
             else:
-                save_loc=save_loc+'\\'
+                save_loc = save_loc + '\\'
     
     #Create the folder for the results
     check_create_dir(save_loc)
@@ -113,7 +113,7 @@ def check_params(meas_height, disp_height, canopy_height, lat, save_loc,
     #If the displacement height is not given
     if disp_height is None:
         #Check that the canopy height is given
-        if isinstance(canopy_height, (int, float))==False:
+        if isinstance(canopy_height, (int, float)) == False:
             sys.exit('canopy_height is required if disp_height is not given. ' + 
                      'canopy_height has an invalid value. Closing the program.')
         
@@ -127,11 +127,11 @@ def check_params(meas_height, disp_height, canopy_height, lat, save_loc,
               'canopy_height will be ignored.')
     
     #Check that do_kljun is either True or False
-    if isinstance(do_kljun15, bool)==False:
+    if isinstance(do_kljun15, bool) == False:
         sys.exit('do_kljun15 must be either True or False. Closing the program.')
     
     #Check that do_km is either True or False
-    if isinstance(do_km, bool)==False:
+    if isinstance(do_km, bool) == False:
         sys.exit('do_km must be either True or False. Closing the program.')
     
     #Check that latitude is zero or larger and 90 or smaller
@@ -205,7 +205,7 @@ def bounday_layer_height(L, ustar, t_cov, lat, zm, air_t):
     ind = h_stab.index.get_loc(h_stab.first_valid_index())
     for k in range(len(L)):
         if k < ind:
-            h = pd.concat([h, pd.Series(np.nan, index=[L.index[k]])])
+            h = pd.concat([h, pd.Series(np.nan, index = [L.index[k]])])
             continue
             
         #If stable or neutral stratification, calculate h directly
@@ -213,7 +213,7 @@ def bounday_layer_height(L, ustar, t_cov, lat, zm, air_t):
             #Boundary layer height in stable and neutral stratification
             #Eq. B1
             h_cur = (L[k] / 3.8) * (-1 + np.sqrt(1 + 2.28 * (ustar[k] / (f * L[k]))))
-            h = pd.concat([h, pd.Series(h_cur, index=[L.index[k]])])
+            h = pd.concat([h, pd.Series(h_cur, index = [L.index[k]])])
         
         #In case of unstable stratification, solve h iteratively
         else:     
@@ -226,7 +226,7 @@ def bounday_layer_height(L, ustar, t_cov, lat, zm, air_t):
             #Combine the parts of the equation B5
             dh_dt = D / (E + F) * 1800 #Seconds to 30 min
             h_cur = h_cur + dh_dt #Add the change in height to the previous height
-            h = pd.concat([h, pd.Series(h_cur, index=[L.index[k]])])
+            h = pd.concat([h, pd.Series(h_cur, index = [L.index[k]])])
             
     return h
 
@@ -246,7 +246,7 @@ def get_contribution_dist(r, zm, h, umean, ustar):
 
 #Footprints according to Kljun et al. 2015
 def kljun_2015(zL, ustar, wind_speed, h, zm):
-    vk=0.4 #Von Karman
+    vk = 0.4 #Von Karman
     
     #If the boundary layer height is smaller than 10 m (not mentioned in the 
     #Kuljun2015 paper, but it is used in the attached footprint script) 
@@ -254,15 +254,15 @@ def kljun_2015(zL, ustar, wind_speed, h, zm):
     #the height of the entrainment layer (Eq. 27 in Kljun2015), set those 
     #boundary layer heights to nan (=makes also resulting footprints nan) as 
     #those cases break the assumptions of Kljun2015.
-    h[(h < 10) | (zm > 0.8*h)] = np.nan
+    h[(h < 10) | (zm > 0.8 * h)] = np.nan
     
     #If ustar < 0.1 m s-1 or the stability parameter is < -15.5, 
     #Kljun2015 is not valid, set those cases nan.
     #The ustar limit is not mentioned in Kljun2015 paper, but it is used in
     #the attached footprint script, so it is also applied here.
-    ustar[(ustar < 0.1) | (zL < -15.5)]=np.nan
+    ustar[(ustar < 0.1) | (zL < -15.5)] = np.nan
     
-    fps = pd.DataFrame(dtype=float)
+    fps = pd.DataFrame(dtype = float)
     for k in range(len(ustar)):
         #Maximum footprint contribution 
         #Eq. 22 in Kljun2015
@@ -279,7 +279,7 @@ def kljun_2015(zL, ustar, wind_speed, h, zm):
         
         temp = pd.DataFrame({'x_offset':xr_offset, 'x_peak':xr_peak, 
                            'x_50%':xr_50, 'x_60%':xr_60, 'x_70%':xr_70,
-                           'x_80%':xr_80}, index=[ustar.index[k]])
+                           'x_80%':xr_80}, index = [ustar.index[k]])
         fps = pd.concat([fps, temp])
         
     return fps
@@ -288,7 +288,7 @@ def kljun_2015(zL, ustar, wind_speed, h, zm):
 def korm_meix(zL, ustar, wind_speed, zm, disp_height):
     vk = 0.4 #Von Karman
     
-    fps = pd.DataFrame(dtype=float)
+    fps = pd.DataFrame(dtype = float)
     for k in range(len(zL)):
         #Similarity relations (Paulson, 1970)
         #Eqs. 33, 34 and 35 in KM2001
@@ -378,7 +378,7 @@ def korm_meix(zL, ustar, wind_speed, zm, disp_height):
         
         temp = pd.DataFrame({'x_offset':foot_offset, 'x_peak':foot_peak, 
                            'x_50%':fetch50, 'x_60%':fetch60, 'x_70%':fetch70,
-                           'x_80%':fetch80}, index=[zL.index[k]])
+                           'x_80%':fetch80}, index = [zL.index[k]])
         fps = pd.concat([fps, temp])
         
     return fps
@@ -400,10 +400,10 @@ def save_files(fp_data, save_loc, fp_type):
     return
 
 def main(disp_height):
-    print('Starting '+APPNAME+' '+'('+VERSION+').\n')
+    print('Starting ' + APPNAME + ' ' + '(' + VERSION + ').\n')
     
     #Calculate the displacement height if it is not given
-    if disp_height<=0:
+    if disp_height <= 0:
         disp_height = calc_disp_height(canopy_height)
     
     #Check that the given parameters make sense
@@ -460,7 +460,7 @@ def main(disp_height):
         elapsed_time="{:.2f}".format(end-start)
         
         print("Kormann & Meixner (2001) footprints saved.")
-        print('Time elapsed: '+elapsed_time+' seconds.\n')
+        print('Time elapsed: ' + elapsed_time + ' seconds.\n')
         
     else:
         fps_km = np.nan
@@ -472,18 +472,3 @@ def main(disp_height):
 #If the file is not imported, start the program from function main()
 if __name__ == "__main__":
    fps_kljun, fps_km = main(disp_height)
-
-"""
-epro_data=pd.read_csv('C:/Users/korkiak/OneDrive - Ilmatieteen laitos/Desktop/Eddypro demo/Lettosuo/eddypro_letto_fp_korr_meix_full_output_2023-03-16T095027_adv.csv',index_col=0,skiprows=1)
-epro_data, _ = epro_data_mod(epro_data)
-
-plt.figure()
-plt.plot(fps_kljun['x_70%'])
-plt.plot(fps_km['x_70%'])
-plt.plot(epro_data['x_70%'])
-
-plt.figure()
-plt.plot(fps_kljun.x_peak)
-plt.plot(fps_km.x_peak)
-plt.plot(epro_data.x_peak)
-"""

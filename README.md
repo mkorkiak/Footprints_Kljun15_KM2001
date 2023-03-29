@@ -23,10 +23,10 @@ Parameters
 **data_loc**  
 Location of the eddypro full output datafile.  
 The location needs to be in hyphens.  
-The folders can be separated by "/" (Linux and windows) or by "\" (Windows), but if the folders are separated by "\", one needs to add "r" before the first hyphen like this: data_loc = r'C:\m\Desktop\results\'
+The folders can be separated by "/" (Linux and windows) or by backslash (Windows), but if the folders are separated by backslash, one needs to add "r" before the first hyphen like this: data_loc = r'C:\m\Desktop\results'.
 
 **save_loc**  
-Folder to save the footprints. Same rules as for data_loc.
+Folder to save the footprints. Same rules for path formatting as for data_loc.
 
 **meas_height**  
 Measurement height in meters. Typically means the sonic anemometer height.   

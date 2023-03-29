@@ -13,6 +13,13 @@ Kljun et al. (2015) in this program.
 
 No fancy libraries needed. Check that Numpy and Pandas are installed.
 
+Author: Mika Korkiakoski
+
+Bug reports: mika.korkiakoski@fmi.fi
+
+Parameters
+=
+
 **data_loc**  
 Location of the eddypro full output datafile.  
 The location needs to be in hyphens.  

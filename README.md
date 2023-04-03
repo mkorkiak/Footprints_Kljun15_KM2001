@@ -20,39 +20,39 @@ Bug reports: mika.korkiakoski@fmi.fi
 Parameters
 =
 
-**data_loc**  
+**DATA_LOC**  
 Location of the eddypro full output datafile.  
 The location needs to be in hyphens.  
 The folders can be separated by "/" (Linux and windows) or by backslash (Windows), but if the folders are separated by backslash, one needs to add "r" before the first hyphen like this: data_loc = r'C:\m\Desktop\results'.
 
-**save_loc**  
+**SAVE_LOC**  
 Folder to save the footprints. Same rules for path formatting as for data_loc.
 
-**meas_height**  
+**MEAS_HEIGHT**  
 Measurement height in meters. Typically means the sonic anemometer height.   
 This variable is mandatory.
 
-**canopy_height**  
+**CANOPY_HEIGHT**  
 Canopy height.  
 Either canopy height or displacement height is required. Canopy height is used to calculate the displacement height, if the displacement height is not given. If disp_height is given, canopy_height is ignored and a warning is raised.  
 Use the same canopy height as in Eddypro!!!
 
-**disp_height**  
+**DISP_HEIGHT**  
 Displacement height.  
 Set to None if not known. Don't use zero.  
 If disp_height is None, the displacement height will be calculated from the canopy_height similarly as in Eddypro.  
 Use the same displacement height as in Eddypro!!!  
 
-**lat**  
+**LAT**  
 Latitude of the measurements  .
 Needed for Kljun et al. 2015 method for boundary layer height calculation.  
 Needs to be 0 <= lat <= 90.
 
-**do_kljun15**  
+**DO_KLJUN15**  
 Calculate footprints according to Kljun et al. (2015).  
 Must be True or False.
 
-**do_km**  
+**DO_KM01**  
 Calculate footprints according to Kormann & Meixner (2001).  
 Must be True or False.
 

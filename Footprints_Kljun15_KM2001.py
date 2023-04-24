@@ -340,6 +340,11 @@ def kljun_2015(zLs, ustars, umeans, hs, zm):
     #The ustar limit is not mentioned in Kljun2015 paper, but it is used in
     #the attached footprint script, so it is also applied here.
     ustars[(ustars < 0.1) | (zLs < -15.5)] = np.nan
+    
+    #If zL is maller than -15.5, set the corresponding boundary layer height
+    #to nan (=resulting footprint is nan). Such a low zL value breaks the
+    #assumptions of Kljun2015.
+    hs[zLs < -15.5] = np.nan
 
     fps = pd.DataFrame(dtype=float)
     for ind, ustar, umean, h in zip(ustars.index, ustars, umeans, hs):
@@ -363,6 +368,24 @@ def kljun_2015(zLs, ustars, umeans, hs, zm):
 
     return fps
 
+def print_progress_km(lims, ind):
+    """Prints a progress message during K&M2001 calculations on every 20% coverage.
+    
+    Parameters:
+        lims (np array): List of percentages of the array length when a progress
+        message is printed
+        ind (int): Current looping index.
+    """
+    if ind in lims:
+        if ind == lims[0]:
+            print ("Calculating KM2001 footprints. 20% done...")
+        if ind == lims[1]:
+            print ("Calculating KM2001 footprints. 40% done...")
+        if ind == lims[2]:
+            print ("Calculating KM2001 footprints. 60% done...")
+        if ind == lims[3]:
+            print ("Calculating KM2001 footprints. 80% done...")
+            
 def korm_meix(zLs, ustars, umeans, zm):
     """Calculate the footprints according to Kormann & Meixner (2001). The
     footprints are calculated by using the mean wind speed. Roughness length
@@ -379,17 +402,33 @@ def korm_meix(zLs, ustars, umeans, zm):
         different relative contributions for every 30 min period.
     """
     vk = 0.4 #Von Karman
+    
+    #If zL is larger than 3 or smaller than -3, set it to nan, making the resulting
+    #footprint to nan.
+    zLs[zLs.abs() > 3] = np.nan
 
     fps = pd.DataFrame(dtype = float) #Save footprints here.
+    
+    #Print progress
+    total = len(zLs)
+    p20 = np.int(total * 0.2)
+    p40 = np.int(total * 0.4)
+    p60 = np.int(total * 0.6)
+    p80 = np.int(total * 0.8)
+    line_nums = pd.Series(np.arange(len(zLs)),index=zLs.index)
 
     for ind, zL, ustar, umean in zip(zLs.index, zLs, ustars, umeans):
+        #Print progress
+        print_progress_km(np.array([p20, p40, p60, p80]), ind)
+        
         #Similarity relations (Paulson, 1970)
         #Eqs. 33, 34 and 35 in KM2001
         if zL > 0:
             phi_m = 1 + 5 * zL
         else:
             phi_m = (1 - 16 * zL)**(-1/4)
-            phi_c = (1 - 16 * zL)**(-1/2)
+            
+        phi_c = (1 - 16 * zL)**(-1/2)
 
         #Intermediate parameters for K&M2001
         #Exponent of the diffusivity power law
@@ -402,6 +441,15 @@ def korm_meix(zLs, ustars, umeans, zm):
         #Proportionality constant of the diffusivity power law (Eqs. 11 and 32)
         #Eqs. 11 and 32 in KM2001
         kappa = (vk * ustar * zm / phi_c) / zm**n
+        
+        #Check if zL is zero and if kappa is zero (due to ustar being zero). 
+        #If either of them is, set footprints to nan.
+        if np.isnan(zL) == True or kappa == 0:
+            temp = pd.DataFrame({'x_offset':np.nan, 'x_peak':np.nan,
+                               'x_50%':np.nan, 'x_60%':np.nan, 'x_70%':np.nan,
+                               'x_80%':np.nan}, index = [ind])
+            fps = pd.concat([fps, temp])
+            continue
 
         #exponent of the wind speed power law
         #Eq. 36 in KM2001
@@ -499,14 +547,14 @@ def main(DISP_HEIGHT):
     """Main function of the EddyproFiltering program.s
     """
     print('Starting ' + APPNAME + ' ' + '(' + VERSION + ').\n')
-
-    #Calculate the displacement height if it is not given
-    if DISP_HEIGHT <= 0:
-        DISP_HEIGHT = calc_DISP_HEIGHT(CANOPY_HEIGHT)
-
+    
     #Check that the given parameters make sense
     check_params(MEAS_HEIGHT, DISP_HEIGHT, CANOPY_HEIGHT, LAT, SAVE_LOC,
                      DO_KLJUN15, DO_KM01)
+
+    #Calculate the displacement height if it is not given
+    if DISP_HEIGHT is None:
+        DISP_HEIGHT = calc_DISP_HEIGHT(CANOPY_HEIGHT)
 
     #Load and format the Eddypro data
     data, _ = epro_data_load(DATA_LOC)

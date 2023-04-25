@@ -345,9 +345,20 @@ def kljun_2015(zLs, ustars, umeans, hs, zm):
     #to nan (=resulting footprint is nan). Such a low zL value breaks the
     #assumptions of Kljun2015.
     hs[zLs < -15.5] = np.nan
-
+    
+    #Print progress
+    total = len(zLs)
+    p20 = np.int(total * 0.2)
+    p40 = np.int(total * 0.4)
+    p60 = np.int(total * 0.6)
+    p80 = np.int(total * 0.8)
+    line_nums = pd.Series(np.arange(len(zLs)), index=zLs.index)
+    
     fps = pd.DataFrame(dtype=float)
     for ind, ustar, umean, h in zip(ustars.index, ustars, umeans, hs):
+        #Print progress
+        print_progress(np.array([p20, p40, p60, p80]), line_nums[ind], 'Kljun2015')
+        
         #Maximum footprint contribution
         #Eq. 22 in Kljun2015
         xr_peak = 0.87 * zm / (1. - (zm / h)) * (umean / ustar * vk)
@@ -368,7 +379,7 @@ def kljun_2015(zLs, ustars, umeans, hs, zm):
 
     return fps
 
-def print_progress_km(lims, ind):
+def print_progress(lims, ind, method):
     """Prints a progress message during K&M2001 calculations on every 20% coverage.
     
     Parameters:
@@ -378,13 +389,13 @@ def print_progress_km(lims, ind):
     """
     if ind in lims:
         if ind == lims[0]:
-            print ("Calculating KM2001 footprints. 20% done...")
+            print ("Calculating " + method + " footprints. 20% done...")
         if ind == lims[1]:
-            print ("Calculating KM2001 footprints. 40% done...")
+            print ("Calculating " + method + " footprints. 40% done...")
         if ind == lims[2]:
-            print ("Calculating KM2001 footprints. 60% done...")
+            print ("Calculating " + method + " footprints. 60% done...")
         if ind == lims[3]:
-            print ("Calculating KM2001 footprints. 80% done...")
+            print ("Calculating " + method + " footprints. 80% done...")
             
 def korm_meix(zLs, ustars, umeans, zm):
     """Calculate the footprints according to Kormann & Meixner (2001). The
@@ -415,11 +426,11 @@ def korm_meix(zLs, ustars, umeans, zm):
     p40 = np.int(total * 0.4)
     p60 = np.int(total * 0.6)
     p80 = np.int(total * 0.8)
-    line_nums = pd.Series(np.arange(len(zLs)),index=zLs.index)
+    line_nums = pd.Series(np.arange(len(zLs)), index=zLs.index)
 
     for ind, zL, ustar, umean in zip(zLs.index, zLs, ustars, umeans):
         #Print progress
-        print_progress_km(np.array([p20, p40, p60, p80]), ind)
+        print_progress_km(np.array([p20, p40, p60, p80]), line_nums, 'K&M2001')
         
         #Similarity relations (Paulson, 1970)
         #Eqs. 33, 34 and 35 in KM2001
@@ -442,9 +453,9 @@ def korm_meix(zLs, ustars, umeans, zm):
         #Eqs. 11 and 32 in KM2001
         kappa = (vk * ustar * zm / phi_c) / zm**n
         
-        #Check if zL is zero and if kappa is zero (due to ustar being zero). 
-        #If either of them is, set footprints to nan.
-        if np.isnan(zL) == True or kappa == 0:
+        #Check if zL, ustar or kappa is zero. 
+        #If any of them is, set footprints to nan.
+        if np.isnan(zL) == True or np.isnan(ustar) == True or kappa == 0:
             temp = pd.DataFrame({'x_offset':np.nan, 'x_peak':np.nan,
                                'x_50%':np.nan, 'x_60%':np.nan, 'x_70%':np.nan,
                                'x_80%':np.nan}, index = [ind])

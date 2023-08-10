@@ -25,7 +25,7 @@ Location of the eddypro full output datafile.
 The location needs to be in hyphens.  
 The folders can be separated by "/" (Linux and windows) or by backslash (Windows), but if the folders are separated by backslash, one needs to add "r" before the first hyphen like this: data_loc = r'C:\m\Desktop\results'.
 
-**D_Z0_SECTORS_LOC**
+**D_Z0_SECTORS_LOC**  
 Location of the sector-wise d and z0 file.  
 Set to None if no sector-wise values are used.  
 If sector-wise d and z0 are used, they with the aerodynamic measurement height and recalculated stability parameters will be saved into a separate file.
@@ -48,7 +48,7 @@ Set to None if not known. Don't use zero.
 If disp_height is None, the displacement height will be calculated from the canopy_height similarly as in Eddypro.  
 Use the same displacement height as in Eddypro!!!  
 
-**Z0**
+**Z0**  
 Roughness length  
 Set to None if not known. Don't use zero.  
 If Z0 is None, it is not used to calculate footprints. Instead, alternative methods are used.  

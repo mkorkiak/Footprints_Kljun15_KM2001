@@ -485,10 +485,10 @@ def kljun_2015(zLs, ustars, umeans, hs, zms, Ls, z0s):
     
     #Print progress
     total = len(zLs)
-    p20 = np.int(total * 0.2)
-    p40 = np.int(total * 0.4)
-    p60 = np.int(total * 0.6)
-    p80 = np.int(total * 0.8)
+    p20 = int(total * 0.2)
+    p40 = int(total * 0.4)
+    p60 = int(total * 0.6)
+    p80 = int(total * 0.8)
     line_nums = pd.Series(np.arange(len(zLs)), index=zLs.index)
 
     fps = pd.DataFrame(dtype=float)
@@ -552,7 +552,7 @@ def print_progress(lims, ind, method):
         if ind == lims[3]:
             print ("Calculating " + method + " footprints. 80% done...")
 
-def korm_meix(zLs, ustars, umeans, zm):
+def korm_meix(zLs, ustars, umeans, zms):
     """Calculate the footprints according to Kormann & Meixner (2001). The
     footprints are calculated by using the mean wind speed. Roughness length
     is not used.
@@ -577,13 +577,13 @@ def korm_meix(zLs, ustars, umeans, zm):
     
     #Print progress
     total = len(zLs)
-    p20 = np.int(total * 0.2)
-    p40 = np.int(total * 0.4)
-    p60 = np.int(total * 0.6)
-    p80 = np.int(total * 0.8)
+    p20 = int(total * 0.2)
+    p40 = int(total * 0.4)
+    p60 = int(total * 0.6)
+    p80 = int(total * 0.8)
     line_nums = pd.Series(np.arange(len(zLs)), index=zLs.index)
     
-    for ind, zL, ustar, umean in zip(zLs.index, zLs, ustars, umeans):
+    for ind, zL, ustar, umean, zm in zip(zLs.index, zLs, ustars, umeans, zms):
         #Print progress
         print_progress(np.array([p20, p40, p60, p80]), line_nums[ind], 'K&M2001')
         

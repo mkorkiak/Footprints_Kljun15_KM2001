@@ -69,7 +69,7 @@ DISP_HEIGHT = None
 #Use the same roughness length as in Eddypro!!!
 Z0 = None
 
-#Latitude of the measurements, needed for Kljun et al. 2015
+#Latitude [deg] of the measurements, needed for Kljun et al. 2015
 #Needs to be 0 <= lat <= 90
 LAT = 60
 
@@ -364,7 +364,7 @@ def bounday_layer_height(Ls, ustars, t_covs, LAT, zLs, air_ts):
         hs (series): Series containing the calculated boundary layer heights
     """
     omg = 7.2921159e-5 #Angular velocity of Earth's rotation
-    f = -2 * omg * np.sin(LAT) #Coriolis parameter
+    f = 2 * omg * np.sin(np.deg2rad(LAT)) #Coriolis parameter
 
     #If zeta larger than this, startification is considered neutral or stable
     neutral_limit = 0

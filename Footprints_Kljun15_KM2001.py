@@ -278,7 +278,11 @@ def epro_data_load(DATA_LOC):
     data.index = data_times #Replace index with datetimes
 
     data = data.drop(['date','time'], axis = 1) #Remove date and time columns
-    data = data.astype(float) #all data to float format
+    
+    #All data to float format
+    cols = data.columns
+    for col in cols:
+        data[col] = pd.to_numeric(data[col], errors = 'coerce')
 
     #Make 30 min averaging to remove possible extra minutes in the timestamp
     data = data.resample('30min').mean()

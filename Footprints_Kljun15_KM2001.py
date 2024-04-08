@@ -34,26 +34,26 @@ import numpy as np
 import pandas as pd
 
 #Location of the eddypro full output datafile
-DATA_LOC = '/home/m/Desktop/eddypro_full_output_adv.csv'
+DATA_LOC = 'C:/Users/korkiak/OneDrive - Ilmatieteen laitos/Desktop/Hommat/eddypro_2021_full_output_allsaints_adv.csv'
 
 #Location of the sector-wise d and z0 file.
 #Set to None if no sector-wise values are used.
 #If sector-wise d and z0 are used, they with the aerodynamic measurement height
 #and recalculated stability parameters will be saved into a separate file.
-D_Z0_SECTORS_LOC = '/home/m/Desktop/d_and_z0.xlsx'
+D_Z0_SECTORS_LOC = None
 
 #Folder to save the footprints
-SAVE_LOC = '/home/m/Desktop/'
+SAVE_LOC = 'C:/Users/korkiak/OneDrive - Ilmatieteen laitos/Desktop/Hommat/'
 
 #Measurement height
-MEAS_HEIGHT = 7
+MEAS_HEIGHT = 2.5
 
 #Canopy height
 #Either canopy height or displacement height is required. Canopy height is used
 #to calculate the displacement height, if the displacement height is not given.
 #If DISP_HEIGHT is given, CANOPY_HEIGHT is ignored.
 #Use the same canopy height as in Eddypro!!!
-CANOPY_HEIGHT = 2
+CANOPY_HEIGHT = 0
 
 #Displacement height
 #Set to None if not known. Don't use zero.
@@ -71,7 +71,7 @@ Z0 = None
 
 #Latitude [deg] of the measurements, needed for Kljun et al. 2015
 #Needs to be 0 <= lat <= 90
-LAT = 60
+LAT = 51
 
 #Calculate footprints according to Kljun et al. 2015
 #Must be True or False
@@ -283,6 +283,9 @@ def epro_data_load(DATA_LOC):
     cols = data.columns
     for col in cols:
         data[col] = pd.to_numeric(data[col], errors = 'coerce')
+    
+    #Transform -9999 to nan
+    data[data == -9999] = np.nan
 
     #Make 30 min averaging to remove possible extra minutes in the timestamp
     data = data.resample('30min').mean()
@@ -389,12 +392,12 @@ def bounday_layer_height(Ls, ustars, t_covs, LAT, zLs, air_ts):
     #h can only be iterated, not calculated directly.
     ind_ok = h_stab.index[h_stab.index.get_loc(h_stab.first_valid_index())]
     for ind, L, zL, ustar, t_cov, air_t in zip(h_stab.index, Ls, zLs, ustars, t_covs, air_ts):
-        if len(hs)==0 and ind != ind_ok:
+        if hs.isnull().all() and ind != ind_ok:
             hs = pd.concat([hs, pd.Series(np.nan, index = [ind])])
             continue
 
         #If stable or neutral stratification, calculate h directly
-        if zL > neutral_limit:
+        if zL >= neutral_limit:
             #Boundary layer height in stable and neutral stratification
             #Eq. B1
             h_cur = (L / 3.8) * (-1 + np.sqrt(1 + 2.28 * (ustar / (f * L))))

@@ -34,7 +34,7 @@ import numpy as np
 import pandas as pd
 
 #Location of the eddypro full output datafile
-DATA_LOC = 'C:/Users/korkiak/OneDrive - Ilmatieteen laitos/Desktop/Hommat/eddypro_2021_full_output_allsaints_adv.csv'
+DATA_LOC = '/home/m/Desktop/eddypro_full_output_adv.csv'
 
 #Location of the sector-wise d and z0 file.
 #Set to None if no sector-wise values are used.
@@ -43,7 +43,7 @@ DATA_LOC = 'C:/Users/korkiak/OneDrive - Ilmatieteen laitos/Desktop/Hommat/eddypr
 D_Z0_SECTORS_LOC = None
 
 #Folder to save the footprints
-SAVE_LOC = 'C:/Users/korkiak/OneDrive - Ilmatieteen laitos/Desktop/Hommat/'
+SAVE_LOC = '/home/m/Desktop/'
 
 #Measurement height
 MEAS_HEIGHT = 2.5
@@ -53,7 +53,7 @@ MEAS_HEIGHT = 2.5
 #to calculate the displacement height, if the displacement height is not given.
 #If DISP_HEIGHT is given, CANOPY_HEIGHT is ignored.
 #Use the same canopy height as in Eddypro!!!
-CANOPY_HEIGHT = 0
+CANOPY_HEIGHT = 0.3
 
 #Displacement height
 #Set to None if not known. Don't use zero.
@@ -71,7 +71,7 @@ Z0 = None
 
 #Latitude [deg] of the measurements, needed for Kljun et al. 2015
 #Needs to be 0 <= lat <= 90
-LAT = 51
+LAT = 60
 
 #Calculate footprints according to Kljun et al. 2015
 #Must be True or False

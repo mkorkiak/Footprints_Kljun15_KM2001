@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 This program calculates the distances where the relative footprint contributions
-(50%, 60Q%, 70%, 80%) are obtained for the Eddypro full output data. The program
+(50%, 60%, 70%, 80%) are obtained for the Eddypro full output data. The program
 uses Kljun et al. (2015) and Kormann & Meixner (2001) methods to estimate
 the footprint contributions.
 
@@ -79,7 +79,7 @@ DO_KLJUN15 = True
 
 #Calculate footprints according to Kormann & Meixner, 2001
 #Must be True or False
-#KM2001 gives generally larger footprints and is 6-7 times slower than Kljun15.
+#KM2001 gives generally larger footprints and is somewhat slower than Kljun15.
 DO_KM01 = False
 
 

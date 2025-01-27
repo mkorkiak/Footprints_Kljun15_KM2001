@@ -8,7 +8,7 @@ the footprint contributions.
 This program needs to be configured before running it, see the parameters and
 more detailed descriptions below.
 
-Kormann & Meixner (2001) gives larger footprints and is 6-7 times slower than 
+Kormann & Meixner (2001) gives larger footprints and is somewhat slower than 
 Kljun et al. (2015) in this program.
 
 No fancy libraries needed. Check that Numpy and Pandas are installed.
@@ -51,7 +51,7 @@ Use the same displacement height as in Eddypro!!!
 **Z0**  
 Roughness length  
 Set to None if not known. Don't use zero.  
-If Z0 is None, it is not used to calculate footprints. Instead, alternative methods are used.  
+If Z0 is None, it is not used to calculate footprints. Instead, alternative methods are used. See the references for more details.
 Use the same roughness length as in Eddypro!!!  
 
 **LAT**  

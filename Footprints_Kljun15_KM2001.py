@@ -85,7 +85,7 @@ DO_KM01 = False
 
 
 #########################################################################################
-VERSION = 'v1.2.1 JAN 2025'
+VERSION = 'v1.2.2 JAN 2025'
 APPNAME = 'Footprints_Kljun15_KM2001'
 
 #Ignore warnings. I know what I'm doing.

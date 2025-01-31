@@ -408,7 +408,7 @@ def bounday_layer_height(Ls, ustars, t_covs, LAT, zLs, air_ts):
             #Eq. B1
             h_cur = (L / 3.8) * (-1 + np.sqrt(1 + 2.28 * (ustar / (f * L))))
             if len(hs)==0:
-                hs = pd.Series(np.nan, index = [ind])
+                hs = pd.Series(h_cur, index = [ind])
             else:
                 hs = pd.concat([hs, pd.Series(h_cur, index = [ind])])
 

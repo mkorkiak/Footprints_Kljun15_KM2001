@@ -85,7 +85,7 @@ DO_KM01 = False
 
 
 #########################################################################################
-VERSION = 'v1.2.2 JAN 2025'
+VERSION = 'v1.2.3 APR 2025'
 APPNAME = 'Footprints_Kljun15_KM2001'
 
 #Ignore warnings. I know what I'm doing.
@@ -266,14 +266,7 @@ def epro_data_load(DATA_LOC):
 
     #Timestamps to datetime
     try:
-        data_times = pd.Series(dtype=object)
-        for k in range(len(data)):
-            if len(data_times)==0:
-                data_times = pd.Series(pd.to_datetime(data.date.iloc[k]
-                                    + ' ' + data.time.iloc[k], format = '%Y-%m-%d %H:%M'))
-            else:
-                data_times = pd.concat([data_times, pd.Series(pd.to_datetime(data.date.iloc[k]
-                                    + ' ' + data.time.iloc[k], format = '%Y-%m-%d %H:%M'))])
+        data_times = pd.to_datetime(data.date + ' ' + data.time, format = '%Y-%m-%d %H:%M')
     except AttributeError:
         raise AttributeError('There is something wrong with the datafile. ' +
                              'Check that it is Eddypro full output file! Closing the program.')

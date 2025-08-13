@@ -2,7 +2,6 @@
 """
 This program calculates the distances where the relative footprint contributions
 (50%, 60%, 70%, 80%) are obtained for the Eddypro full output data. The program
-(50%, 60%, 70%, 80%) are obtained for the Eddypro full output data. The program
 uses Kljun et al. (2015) and Kormann & Meixner (2001) methods to estimate
 the footprint contributions.
 

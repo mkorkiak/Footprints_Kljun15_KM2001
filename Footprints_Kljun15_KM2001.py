@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 This program calculates the distances where the relative footprint contributions
-(50%, 60Q%, 70%, 80%) are obtained for the Eddypro full output data. The program
+(50%, 60%, 70%, 80%) are obtained for the Eddypro full output data. The program
 uses Kljun et al. (2015) and Kormann & Meixner (2001) methods to estimate
 the footprint contributions.
 
@@ -45,6 +45,12 @@ D_Z0_SECTORS_LOC = None
 #Folder to save the footprints
 SAVE_LOC = '/home/m/Desktop/'
 
+#Location of the Fetch file. 
+#Set to None if fetch file is not used
+#If Fetch file is used, it will be used to calculate the cumulative
+#footprint contribution ratio (%) within the fetch distance.
+FETCH_LOC = None
+
 #Measurement height
 MEAS_HEIGHT = 2.5
 
@@ -85,7 +91,7 @@ DO_KM01 = False
 
 
 #########################################################################################
-VERSION = 'v1.2.1 JAN 2025'
+VERSION = 'v1.3 AUG 2025'
 APPNAME = 'Footprints_Kljun15_KM2001'
 
 #Ignore warnings. I know what I'm doing.
@@ -200,6 +206,45 @@ def load_d_z0_file(D_Z0_SECTORS_LOC):
                          "Closing the program.")
     
     return d_z0_data
+
+def load_fetch_data(FETCH_LOC):
+    """Loads the datafile containing the fetch information of the site. 
+        
+    Parameters:
+        FETCH_LOC (str): Path to the fetch datafile. 
+                
+    Returns:
+        fetch_data (dataframe): fetch data in pandas dataframe.      
+    """
+    #If Fetch data is not used, set it to None
+    if FETCH_LOC == None:
+        fetch_data = None
+        print("\nThe Fetch data file was not found. " + 
+              "Accumulated footprint ratio at fetch distances won't be calculated.")
+        return fetch_data
+    
+    #Try to load the fetch data
+    try:
+        fetch_data = pd.read_excel(FETCH_LOC)
+    except FileNotFoundError: #If file was not found
+        sys.exit('Fetch file (FETCH_LOC) was not found. Check the file path! Closing the program.')
+    except ValueError: #If the file is not an excel file. Try loading it as a csv.
+        try:
+            fetch_data = pd.read_csv(FETCH_LOC)
+        except: #If any error after this. Close the program
+            sys.exit('Fetch file (FETCH_LOC) was not found. Check the file path! '
+                     'Closing the program.')
+
+    #Check that all the required columns exist
+    ok_cols = pd.Series(['Start_WD [deg]', 'End_WD [deg]', 'Fetch [m]'])
+    if ok_cols.isin(fetch_data.columns).all() is False:
+        sys.exit('The fetch datafile (FETCH_LOC) does not include all the required columns '
+                 '(Start_WD [deg], End_WD [deg], Fetch [m]). Fix the file and try again. '
+                 'Closing the program.')
+    
+    fetch_data.columns = ['st','et','fetch']
+    
+    return fetch_data
 
 def disp_z0_height_mngmnt(DISP_HEIGHT, CANOPY_HEIGHT, d_z0_data):
     """Calculate the displacement height if it is not given. Use the same
@@ -356,6 +401,32 @@ def calc_zm_stabparam(data, data_cols, d_z0_data, SAVE_LOC):
 
     return data
 
+def get_fetch(wdirs, fetch_data):
+    """Loop through wind direction of each 30 min period and get the corresponding
+    fetch from the correct sector.
+    If fetch data does not exist, set fetches to nan.
+    
+    Parameters:
+        wdirs (series): Series containing wind directions
+        fetch_data (dataframe): Dataframe containing wind sectors and fetches
+        
+    Returns:
+        wd_fetch (series): Series containing the corresponding fetch for every
+        averaging period.
+    """
+    if fetch_data is None:
+        wd_fetch = pd.Series(np.nan, index = wdirs.index)
+        
+    else:
+        wd_fetch = pd.Series(dtype = float)
+        for ind1, cur_wd in wdirs.items():
+            for _, row in fetch_data.iterrows():
+                if (cur_wd >= row.st) and (cur_wd < row.et):
+                    wd_fetch = pd.concat([wd_fetch, pd.Series(row.fetch, index = [ind1])])
+                    break
+        
+    return wd_fetch
+
 def bounday_layer_height(Ls, ustars, t_covs, LAT, zLs, air_ts):
     """Calculates the boundary layer height according to Kljun et al. 2015,
     Appendix B. During stable stratification, the height is calculated directly.
@@ -407,10 +478,7 @@ def bounday_layer_height(Ls, ustars, t_covs, LAT, zLs, air_ts):
             #Boundary layer height in stable and neutral stratification
             #Eq. B1
             h_cur = (L / 3.8) * (-1 + np.sqrt(1 + 2.28 * (ustar / (f * L))))
-            if len(hs)==0:
-                hs = pd.Series(np.nan, index = [ind])
-            else:
-                hs = pd.concat([hs, pd.Series(h_cur, index = [ind])])
+            hs = pd.concat([hs, pd.Series(h_cur, index = [ind])])
 
         #In case of unstable stratification, solve h iteratively
         else:
@@ -473,7 +541,9 @@ def kljun_2015(zLs, ustars, umeans, hs, zms, Ls, z0s):
         zms (series): Series containing the heights above the displacement height.
         Ls (series): Series containing the obukhov lengths
         z0s (series): Series containing the roughness lengths
-        
+        wd_fetch (series): Series containing the corresponding fetch for every
+        averaging period.
+
     Returns:
         fps (dataframe): Dataframe containing the footprints calculated with
         different relative contributions for every 30 min period.
@@ -542,10 +612,53 @@ def kljun_2015(zLs, ustars, umeans, hs, zms, Ls, z0s):
         xr_60 = get_contribution_dist(0.6, zm, h, umean, ustar, z0, psi, use_z0)
         xr_70 = get_contribution_dist(0.7, zm, h, umean, ustar, z0, psi, use_z0)
         xr_80 = get_contribution_dist(0.8, zm, h, umean, ustar, z0, psi, use_z0)
+ratio = np.nan
 
+        #If FETC_LOC is not None (i.e. fetch data is given) and the footprint
+        #calculation above worked properly, get also the ratio of the accumulated
+        #flux at the fetch distance.
+        if FETCH_LOC is not None and np.isnan(xr_50) == False:
+            #List of ratios that will be tested
+            ratios = np.arange(0, 1, 0.001)
+            
+            #Find the correct ratio by applying binary search
+            while True:
+                #Check the middle value in the remaining ratio list
+                try:
+                    middle = ratios[len(ratios)//2]
+                #If the length of the ratios list is zero, the last used ratio
+                #is the correct ratio.
+                except IndexError:
+                    ratio = middle
+                    break
+               #Get the cumulative footprint distance on the current ratio
+                xr = get_contribution_dist(middle, zm, h, umean, ustar, z0,
+                                              psi, use_z0)
+                #If the length of the ratios list is 1, the last used value
+                #is the correct ratio
+                if len(ratios)==1:
+                    ratio = middle
+                    break
+                #If the cumulative footprint distance is smaller than the fetch
+                #distance, remove the ratios that are smaller than the current
+                #ratio.
+                elif xr < fetch:
+                    ratios = ratios[ratios > middle]
+                    continue
+                #If the footprint distance is larger than the fetch, remove
+                #the ratios that are larger than the current ratio.
+                elif xr > fetch:
+                    ratios = ratios[ratios < middle]
+                    continue
+                #If the footprint distance is equal to the fetch, or something
+                #unaccounted happens, the last used ratio is the correct one
+                else:
+                    ratio = middle
+                    break
+            
         temp = pd.DataFrame({'x_offset':xr_offset, 'x_peak':xr_peak,
                            'x_50%':xr_50, 'x_60%':xr_60, 'x_70%':xr_70,
-                           'x_80%':xr_80}, index = [ind])
+                           'x_80%':xr_80, 'ratio':ratio}, index = [ind])
         fps = pd.concat([fps, temp])
 
     return fps
@@ -578,7 +691,9 @@ def korm_meix(zLs, ustars, umeans, zms):
         ustars (series): Series containing the friction velocities.
         umeans (series): Series containing the mean wind speeds.
         zm (float): The height above the displacement height.
-        
+        wd_fetch (series): Series containing the corresponding fetch for every
+        averaging period.
+
     Returns:
         fps (dataframe): Dataframe containing the footprints calculated with
         different relative contributions for every 30 min period.
@@ -659,7 +774,9 @@ def korm_meix(zLs, ustars, umeans, zms):
         do60 = True
         do70 = True
         do80 = True
+        dort = True
         int_foot = 0
+        ratio = np.nan
         di = 1
         for i in range(10000):
             if i == 0:
@@ -668,11 +785,13 @@ def korm_meix(zLs, ustars, umeans, zms):
             #Cross-wind integrated 1D function
             int_foot = int_foot + di * (zeta**mmu * np.exp(-zeta / (i * di)) /
                                         ((i * di)**(1 + mmu) * math.gamma(mmu)))
-
+            
+            #Footprint offset
             if do_offset is True and int_foot > 0.01:
                 foot_offset = i * di
                 do_offset = False
-
+            
+            #50%, 60%, 70%, 80% cumulative contributions
             if do50 is True and int_foot > 0.5:
                 fetch50 = i * di
                 do50 = False
@@ -687,7 +806,20 @@ def korm_meix(zLs, ustars, umeans, zms):
 
             if do80 is True and int_foot > 0.8:
                 fetch80 = i * di
-                do80 = False
+                do80 = False 
+                #If there is no fetch file, stop here
+                if FETCH_LOC is None:
+                    break
+            
+            if dort is True and i < fetch:
+                ratio = int_foot
+                if ratio > 1:
+                    ratio = 1
+                    break
+                
+            #If 80% contribution has been found and i is over the fetch
+            #distance, stop here.
+            if do80 == False and i > fetch:
                 break
 
         #Peak location (meters from the tower)
@@ -741,6 +873,9 @@ def main(DISP_HEIGHT):
     #depending on the input.
     d_z0_data = disp_z0_height_mngmnt(DISP_HEIGHT, CANOPY_HEIGHT, d_z0_data)
 
+    #Load the fetch data
+    fetch_data = load_fetch_data(FETCH_LOC)
+
     #Load and format the Eddypro data
     data, data_cols = epro_data_load(DATA_LOC)
 
@@ -749,6 +884,9 @@ def main(DISP_HEIGHT):
     #Calculate zm and recalculate stability parameters for all wind sectors
     #and save the results into a separate file.
     data = calc_zm_stabparam(data, data_cols, d_z0_data, SAVE_LOC)
+
+    #Get the fetch for each averaging period
+    wd_fetch = get_fetch(data.wind_dir, fetch_data)
 
     if DO_KLJUN15 is True:
         #Start timer
@@ -762,7 +900,7 @@ def main(DISP_HEIGHT):
         #Calculate cross-wind integrated footprint according to Kljun et al. 2015
         print("Calculating Kljun et al. (2015) footprints.")
         fps_kljun = kljun_2015(data['(z-d)/L'], data['u*'], data.wind_speed, 
-                               hs, data.zm, data.L, data.z0)
+                               hs, data.zm, data.L, data.z0, wd_fetch)
 
         #Save the footprints
         save_files(fps_kljun, SAVE_LOC, 'Kljun2015')
@@ -783,7 +921,7 @@ def main(DISP_HEIGHT):
 
         #Calculate cross-wind integrated footprint according to Kormann & Meixner 2001
         print("Calculating Kormann & Meixner (2001) footprints.")
-        fps_km = korm_meix(data['(z-d)/L'], data['u*'], data.wind_speed, data.zm)
+        fps_km = korm_meix(data['(z-d)/L'], data['u*'], data.wind_speed, data.zm, wd_fetch)
 
         #Save the footprints
         save_files(fps_km, SAVE_LOC, 'K&M2001')

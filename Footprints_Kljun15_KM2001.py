@@ -2,6 +2,7 @@
 """
 This program calculates the distances where the relative footprint contributions
 (50%, 60%, 70%, 80%) are obtained for the Eddypro full output data. The program
+(50%, 60%, 70%, 80%) are obtained for the Eddypro full output data. The program
 uses Kljun et al. (2015) and Kormann & Meixner (2001) methods to estimate
 the footprint contributions.
 
@@ -85,7 +86,7 @@ DO_KLJUN15 = True
 
 #Calculate footprints according to Kormann & Meixner, 2001
 #Must be True or False
-#KM2001 gives generally larger footprints and is 6-7 times slower than Kljun15.
+#KM2001 gives generally larger footprints and is somewhat slower than Kljun15.
 DO_KM01 = False
 
 
@@ -311,14 +312,7 @@ def epro_data_load(DATA_LOC):
 
     #Timestamps to datetime
     try:
-        data_times = pd.Series(dtype=object)
-        for k in range(len(data)):
-            if len(data_times)==0:
-                data_times = pd.Series(pd.to_datetime(data.date.iloc[k]
-                                    + ' ' + data.time.iloc[k], format = '%Y-%m-%d %H:%M'))
-            else:
-                data_times = pd.concat([data_times, pd.Series(pd.to_datetime(data.date.iloc[k]
-                                    + ' ' + data.time.iloc[k], format = '%Y-%m-%d %H:%M'))])
+        data_times = pd.to_datetime(data.date + ' ' + data.time, format = '%Y-%m-%d %H:%M')
     except AttributeError:
         raise AttributeError('There is something wrong with the datafile. ' +
                              'Check that it is Eddypro full output file! Closing the program.')
@@ -528,7 +522,7 @@ def get_contribution_dist(r, zm, h, umean, ustar, z0, psi, use_z0):
 
     return xr
 
-def kljun_2015(zLs, ustars, umeans, hs, zms, Ls, z0s):
+def kljun_2015(zLs, ustars, umeans, hs, zms, Ls, z0s, wd_fetch):
     """Calculate the footprints according to Kljun et al. 2015. The
     footprints are calculated by using the mean wind speed. Roughness length
     is not used.
@@ -578,8 +572,8 @@ def kljun_2015(zLs, ustars, umeans, hs, zms, Ls, z0s):
     line_nums = pd.Series(np.arange(len(zLs)), index=zLs.index)
 
     fps = pd.DataFrame(dtype=float)
-    for ind, ustar, umean, h, L, zm, z0 in zip(ustars.index, ustars, umeans, 
-                                               hs, Ls, zms, z0s):
+    for ind, ustar, umean, h, L, zm, z0, fetch in zip(ustars.index, ustars, umeans, 
+                                               hs, Ls, zms, z0s, wd_fetch):
         #Print progress
         print_progress(np.array([p20, p40, p60, p80]), line_nums[ind], 'Kljun2015')
         
@@ -612,7 +606,7 @@ def kljun_2015(zLs, ustars, umeans, hs, zms, Ls, z0s):
         xr_60 = get_contribution_dist(0.6, zm, h, umean, ustar, z0, psi, use_z0)
         xr_70 = get_contribution_dist(0.7, zm, h, umean, ustar, z0, psi, use_z0)
         xr_80 = get_contribution_dist(0.8, zm, h, umean, ustar, z0, psi, use_z0)
-ratio = np.nan
+        ratio = np.nan
 
         #If FETC_LOC is not None (i.e. fetch data is given) and the footprint
         #calculation above worked properly, get also the ratio of the accumulated
@@ -681,7 +675,7 @@ def print_progress(lims, ind, method):
         if ind == lims[3]:
             print ("Calculating " + method + " footprints. 80% done...")
 
-def korm_meix(zLs, ustars, umeans, zms):
+def korm_meix(zLs, ustars, umeans, zms, wd_fetch):
     """Calculate the footprints according to Kormann & Meixner (2001). The
     footprints are calculated by using the mean wind speed. Roughness length
     is not used.
@@ -714,7 +708,7 @@ def korm_meix(zLs, ustars, umeans, zms):
     p80 = int(total * 0.8)
     line_nums = pd.Series(np.arange(len(zLs)), index=zLs.index)
     
-    for ind, zL, ustar, umean, zm in zip(zLs.index, zLs, ustars, umeans, zms):
+    for ind, zL, ustar, umean, fetch, zm in zip(zLs.index, zLs, ustars, umeans, wd_fetch, zms):
         #Print progress
         print_progress(np.array([p20, p40, p60, p80]), line_nums[ind], 'K&M2001')
         

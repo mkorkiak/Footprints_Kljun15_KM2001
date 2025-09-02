@@ -91,7 +91,7 @@ DO_KM01 = False
 
 
 #########################################################################################
-VERSION = 'v1.3.1 AUG 2025'
+VERSION = 'v1.3.1 SEP 2025'
 APPNAME = 'Footprints_Kljun15_KM2001'
 
 #Ignore warnings. I know what I'm doing.
@@ -410,15 +410,21 @@ def get_fetch(wdirs, fetch_data):
         averaging period.
     """
     if fetch_data is None:
-        wd_fetch = pd.Series(np.nan, index = wdirs.index)
+        wd_fetch1 = pd.Series(np.nan, index = wdirs.index)
         
     else:
-        wd_fetch = pd.Series(dtype = float)
+        wd_fetch1 = pd.Series(dtype = float)
         for ind1, cur_wd in wdirs.items():
             for _, row in fetch_data.iterrows():
                 if (cur_wd >= row.st) and (cur_wd < row.et):
-                    wd_fetch = pd.concat([wd_fetch, pd.Series(row.fetch, index = [ind1])])
+                    wd_fetch1 = pd.concat([wd_fetch1, pd.Series(row.fetch, index = [ind1])])
                     break
+    
+    #Make sure that the length of the fetch Series is the same as that of the
+    #loaded eddypro file. The above loop does not consider nans (e.g. anemometer
+    #malfunction), which is why the resulting Series may be shorter than the original.
+    times = wdirs.index
+    wd_fetch=pd.Series(wd_fetch1, index = times)  
         
     return wd_fetch
 
@@ -463,14 +469,14 @@ def bounday_layer_height(Ls, ustars, t_covs, LAT, zLs, air_ts):
                                                           ustars, t_covs, air_ts,
                                                           h_stabs):
         if hs.isnull().all() and ind != ind_ok:
-            if len(hs)==0:
+            if len(hs) == 0:
                 hs = pd.Series(np.nan, index = [ind])
             else:
                 hs = pd.concat([hs, pd.Series(np.nan, index = [ind])])
             continue
 
         #If stable or neutral stratification, calculate h directly
-        if ind >= ind_ok and np.isnan(h_stab)==False:
+        if ind >= ind_ok and np.isnan(h_stab) == False:
             #Boundary layer height in stable and neutral stratification
             #Eq. B1, calculated before the loop (see above)
             h_cur = h_stab
@@ -940,4 +946,5 @@ def main(DISP_HEIGHT):
 if __name__ == "__main__":
     fps_kljun, fps_km = main(DISP_HEIGHT)
    
+
 

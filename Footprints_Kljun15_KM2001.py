@@ -241,6 +241,8 @@ def load_fetch_data(FETCH_LOC):
         sys.exit('The fetch datafile (FETCH_LOC) does not include all the required columns '
                  '(Start_WD [deg], End_WD [deg], Fetch [m]). Fix the file and try again. '
                  'Closing the program.')
+    else:
+        print("\nFetch file loaded successfully.\n")
     
     fetch_data.columns = ['st','et','fetch']
     
@@ -440,9 +442,6 @@ def bounday_layer_height(Ls, ustars, t_covs, LAT, zLs, air_ts):
     omg = 7.2921159e-5 #Angular velocity of Earth's rotation
     f = 2 * omg * np.sin(np.deg2rad(LAT)) #Coriolis parameter
 
-    #If zeta larger than this, startification is considered neutral or stable
-    neutral_limit = 0
-
     #Constants for Eq. B5
     A = 0.2
     B = 2.5
@@ -453,12 +452,16 @@ def bounday_layer_height(Ls, ustars, t_covs, LAT, zLs, air_ts):
     hs = pd.Series(dtype=float) #Save boundary layer heights here
 
     #Boundary layer height in neutral or stable stratification
-    h_stab = (Ls / 3.8) * (-1 + np.sqrt(1 + 2.28 * (ustars / (f * Ls))))
+    #Eq. B1
+    h_stabs = (Ls / 3.8) * (-1 + np.sqrt(1 + 2.28 * (ustars / (f * Ls))))
 
     #The first index with neutral or stable stratification, because unstable
-    #h can only be iterated, not calculated directly.
-    ind_ok = h_stab.index[h_stab.index.get_loc(h_stab.first_valid_index())]
-    for ind, L, zL, ustar, t_cov, air_t in zip(h_stab.index, Ls, zLs, ustars, t_covs, air_ts):
+    #h can only be iterated, not calculated directly, the rows before this
+    #cannot be used.
+    ind_ok = h_stabs.index[h_stabs.index.get_loc(h_stabs.first_valid_index())]
+    for ind, L, zL, ustar, t_cov, air_t, h_stab in zip(h_stabs.index, Ls, zLs, 
+                                                          ustars, t_covs, air_ts,
+                                                          h_stabs):
         if hs.isnull().all() and ind != ind_ok:
             if len(hs)==0:
                 hs = pd.Series(np.nan, index = [ind])
@@ -467,10 +470,10 @@ def bounday_layer_height(Ls, ustars, t_covs, LAT, zLs, air_ts):
             continue
 
         #If stable or neutral stratification, calculate h directly
-        if zL >= neutral_limit:
+        if ind >= ind_ok and np.isnan(h_stab)==False:
             #Boundary layer height in stable and neutral stratification
-            #Eq. B1
-            h_cur = (L / 3.8) * (-1 + np.sqrt(1 + 2.28 * (ustar / (f * L))))
+            #Eq. B1, calculated before the loop (see above)
+            h_cur = h_stab
             hs = pd.concat([hs, pd.Series(h_cur, index = [ind])])
 
         #In case of unstable stratification, solve h iteratively

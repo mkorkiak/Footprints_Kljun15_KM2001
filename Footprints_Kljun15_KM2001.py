@@ -91,7 +91,7 @@ DO_KM01 = False
 
 
 #########################################################################################
-VERSION = 'v1.3.1 SEP 2025'
+VERSION = 'v1.3.2 SEP 2025'
 APPNAME = 'Footprints_Kljun15_KM2001'
 
 #Ignore warnings. I know what I'm doing.
@@ -386,13 +386,17 @@ def calc_zm_stabparam(data, data_cols, d_z0_data, SAVE_LOC):
     if np.std(d_z0_data['d [m]']) != 0:
         #Get the variables of interest
         data_params = data[['zm','d','z0','(z-d)/L']]
+
+        #Get start and end times
+        st = data.index[0].strftime('%Y-%m-%d')
+        et = data.index[-1].strftime('%Y-%m-%d')
         
         #Reset index
         data_params = data_params.reset_index()
     
         #Change the datetime column (previously the index) name
         data_params = data_params.rename(columns = {'index':'Datetime (Period end)'})
-        data_params.to_csv(SAVE_LOC + 'new_zm_d_z0.csv', index = False)
+        data_params.to_csv(SAVE_LOC + 'new_zm_d_z0_' + st + '-' + et + '.csv', index = False)
 
     return data
 
@@ -881,13 +885,14 @@ def main(DISP_HEIGHT):
     #Load and format the Eddypro data
     data, data_cols = epro_data_load(DATA_LOC)
 
-    print("\nEddypro datafile loaded and formatted.\n")
+    print("Eddypro datafile loaded and formatted.\n")
     
     #Calculate zm and recalculate stability parameters for all wind sectors
     #and save the results into a separate file.
     data = calc_zm_stabparam(data, data_cols, d_z0_data, SAVE_LOC)
 
     #Get the fetch for each averaging period
+    print("Acquiring fetches from the fetch file.")
     wd_fetch = get_fetch(data.wind_dir, fetch_data)
 
     if DO_KLJUN15 is True:
@@ -946,5 +951,6 @@ def main(DISP_HEIGHT):
 if __name__ == "__main__":
     fps_kljun, fps_km = main(DISP_HEIGHT)
    
+
 
 

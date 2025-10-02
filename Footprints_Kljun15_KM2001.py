@@ -91,7 +91,7 @@ DO_KM01 = False
 
 
 #########################################################################################
-VERSION = 'v1.3.2 SEP 2025'
+VERSION = 'v1.3.3 OCT 2025'
 APPNAME = 'Footprints_Kljun15_KM2001'
 
 #Ignore warnings. I know what I'm doing.
@@ -834,7 +834,7 @@ def korm_meix(zLs, ustars, umeans, zms, wd_fetch):
 
         temp = pd.DataFrame({'x_offset':foot_offset, 'x_peak':foot_peak,
                            'x_50%':fetch50, 'x_60%':fetch60, 'x_70%':fetch70,
-                           'x_80%':fetch80}, index = [ind])
+                           'x_80%':fetch80, 'ratio':ratio}, index = [ind])
         fps = pd.concat([fps, temp])
 
     return fps
@@ -951,6 +951,7 @@ def main(DISP_HEIGHT):
 if __name__ == "__main__":
     fps_kljun, fps_km = main(DISP_HEIGHT)
    
+
 
 
 

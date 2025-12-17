@@ -564,11 +564,12 @@ def kljun_2015(zLs, ustars, umeans, hs, zms, Ls, z0s, wd_fetch):
     #those cases break the assumptions of Kljun2015.
     hs[(hs < 10) | (zms > 0.8 * hs)] = np.nan
 
-    #If ustar < 0.1 m s-1 or the stability parameter is < -15.5,
+    #If the stability parameter is < -15.5,
     #Kljun2015 is not valid, set those cases nan.
-    #The ustar limit is not mentioned in Kljun2015 paper, but it is used in
-    #the attached footprint script, so it is also applied here.
-    ustars[(ustars < 0.1) | (zLs < -15.5)] = np.nan
+    #The footprint script provided by Kljun2015 also filters data if
+    #u* < 0.1 m s-1, but it is not mentioned in the Kljun2015 paper.
+    #That criterion has been removed here.
+    ustars[zLs < -15.5] = np.nan
     
     #If zL is maller than -15.5, set the corresponding boundary layer height
     #to nan (=resulting footprint is nan). Such a low zL value breaks the
@@ -951,6 +952,7 @@ def main(DISP_HEIGHT):
 if __name__ == "__main__":
     fps_kljun, fps_km = main(DISP_HEIGHT)
    
+
 
 
 

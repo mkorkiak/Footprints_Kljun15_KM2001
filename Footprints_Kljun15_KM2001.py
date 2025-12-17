@@ -91,7 +91,7 @@ DO_KM01 = False
 
 
 #########################################################################################
-VERSION = 'v1.3.4 OCT 2025'
+VERSION = 'v1.3.4 DEC 2025'
 APPNAME = 'Footprints_Kljun15_KM2001'
 
 #Ignore warnings. I know what I'm doing.
@@ -952,6 +952,7 @@ def main(DISP_HEIGHT):
 if __name__ == "__main__":
     fps_kljun, fps_km = main(DISP_HEIGHT)
    
+
 
 
 

@@ -607,7 +607,11 @@ def kljun_2015(zLs, ustars, umeans, hs, zms, Ls, z0s, wd_fetch):
             xr_peak = 0.87 * zm / (1. - (zm / h)) * (np.log(zm / z0) - psi)
             use_z0 = True
         else: #Eq. 21
-            xr_peak = 0.87 * zm / (1. - (zm / h)) * (umean / ustar * vk)
+            try:
+                xr_peak = 0.87 * zm / (1. - (zm / h)) * (umean / ustar * vk)
+            except ZeroDivisionError:
+                xr_peak = np.nan
+                
             psi = np.nan
             use_z0 = False
 
@@ -952,6 +956,7 @@ def main(DISP_HEIGHT):
 if __name__ == "__main__":
     fps_kljun, fps_km = main(DISP_HEIGHT)
    
+
 
 
 
